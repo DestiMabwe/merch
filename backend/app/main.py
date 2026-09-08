@@ -4,7 +4,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
-from app.routers import admin, catalog, storefront
+from app.routers import admin, catalog, orders, storefront
 from app.storage import UPLOAD_DIR
 
 app = FastAPI(title="Camp Merch Store API")
@@ -19,6 +19,7 @@ app.add_middleware(
 
 app.include_router(admin.router)
 app.include_router(catalog.router)
+app.include_router(orders.router)
 app.include_router(storefront.router)
 
 UPLOAD_DIR.mkdir(parents=True, exist_ok=True)

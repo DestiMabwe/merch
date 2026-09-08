@@ -19,4 +19,4 @@ An order-confirmation email sent automatically right after checkout, containing 
 
 ## Blocked by
 
-- 05-cart-checkout-stock-reservation
+- 05-cart-checkout

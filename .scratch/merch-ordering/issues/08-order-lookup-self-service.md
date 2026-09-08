@@ -13,7 +13,7 @@ A public page where a customer enters their order reference plus email or phone 
 ## Acceptance criteria
 
 - [ ] Public lookup form takes an order reference + email or phone; only returns the order if both match (no way to browse other people's orders by guessing a reference alone)
-- [ ] Lookup result shows order status (Pending Payment / Paid / Collected / Cancelled), line items, and total
+- [ ] Lookup result shows order status (Pending Payment / Paid / Ready for Collection / Collected / Cancelled), line items, and total
 - [ ] If the order has no proof-of-payment attached yet and is not cancelled, the page offers an upload field that attaches one via the file-storage module
 - [ ] If the order already has proof attached, the page indicates that
 - [ ] Looking up a non-matching reference/contact combination shows a clear "not found" message, not an error page
@@ -21,4 +21,4 @@ A public page where a customer enters their order reference plus email or phone 
 ## Blocked by
 
 - 03-catalog-management
-- 05-cart-checkout-stock-reservation
+- 05-cart-checkout

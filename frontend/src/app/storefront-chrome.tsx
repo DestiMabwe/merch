@@ -1,4 +1,17 @@
+"use client";
+
+import Link from "next/link";
+import { useCart } from "@/lib/cart-context";
 import styles from "./lineup.module.css";
+
+export function CartLink() {
+  const { count } = useCart();
+  return (
+    <Link href="/cart" className={styles.cartLink}>
+      🛒 Cart{count > 0 ? ` (${count})` : ""}
+    </Link>
+  );
+}
 
 export function StorefrontMark() {
   return (

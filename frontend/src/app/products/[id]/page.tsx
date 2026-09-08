@@ -9,16 +9,20 @@ import {
   type PublicProduct,
   type PublicVariant,
 } from "@/lib/storefront";
-import { StorefrontFooter, StorefrontMark } from "../../storefront-chrome";
+import { CartLink, StorefrontFooter, StorefrontMark } from "../../storefront-chrome";
+import { useCart } from "@/lib/cart-context";
 import styles from "../../lineup.module.css";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8000";
 
 export default function ProductDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { items: cartItems, addItem } = useCart();
   const [status, setStatus] = useState<string | null>(null);
   const [product, setProduct] = useState<PublicProduct | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [selected, setSelected] = useState<PublicVariant | null>(null);
+  const [quantity, setQuantity] = useState(1);
+  const [added, setAdded] = useState(false);
 
   useEffect(() => {
     fetch(`${API_BASE_URL}/health`)
@@ -36,6 +40,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
 
   return (
     <div className={styles.page}>
+      <CartLink />
       <StorefrontMark />
 
       <div className={styles.sheet}>
@@ -87,7 +92,11 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
                         } ${isSelected ? styles["sizeChip--selected"] : ""}`}
                         disabled={isSoldOut}
                         aria-pressed={isSelected}
-                        onClick={() => setSelected(variant)}
+                        onClick={() => {
+                          setSelected(variant);
+                          setQuantity(1);
+                          setAdded(false);
+                        }}
                       >
                         {variantLabel(variant)}
                       </button>
@@ -95,11 +104,66 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
                   })}
                 </div>
 
-                {selected && (
-                  <p className={styles.selectedVariant}>
-                    {variantLabel(selected)} — R{selected.price} — {selected.stock} in stock
-                  </p>
-                )}
+                {selected && (() => {
+                  const alreadyInCart =
+                    cartItems.find((item) => item.variantId === selected.id)?.quantity ?? 0;
+                  const remaining = Math.max(selected.stock - alreadyInCart, 0);
+                  return (
+                    <>
+                      <p className={styles.selectedVariant}>
+                        {variantLabel(selected)} — R{selected.price} — {selected.stock} in stock
+                      </p>
+
+                      {remaining > 0 ? (
+                        <div className={styles.addToCartRow}>
+                          <input
+                            type="number"
+                            min={1}
+                            max={remaining}
+                            value={quantity}
+                            aria-label="Quantity"
+                            className={styles.quantityInput}
+                            onChange={(event) => {
+                              const next = Number(event.target.value);
+                              setQuantity(Math.min(Math.max(next || 1, 1), remaining));
+                              setAdded(false);
+                            }}
+                          />
+                          <button
+                            type="button"
+                            className={styles.addToCartButton}
+                            onClick={() => {
+                              addItem(
+                                {
+                                  productId: product.id,
+                                  productName: product.name,
+                                  variantId: selected.id,
+                                  size: selected.size,
+                                  color: selected.color,
+                                  price: selected.price,
+                                  stock: selected.stock,
+                                },
+                                quantity,
+                              );
+                              setAdded(true);
+                            }}
+                          >
+                            Add to Cart
+                          </button>
+                          {added && (
+                            <Link href="/cart" className={styles.backLink}>
+                              Added — view cart →
+                            </Link>
+                          )}
+                        </div>
+                      ) : (
+                        <p className={styles.tagline}>
+                          All {alreadyInCart} in stock are already in your cart.
+                        </p>
+                      )}
+                    </>
+                  );
+                })()}
               </>
             )}
           </>

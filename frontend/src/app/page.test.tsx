@@ -1,7 +1,13 @@
 import { afterEach, expect, mock, test } from "bun:test";
 import { cleanup, render, screen } from "@testing-library/react";
+import type { ReactElement } from "react";
 
+import { CartProvider } from "@/lib/cart-context";
 import Home from "./page";
+
+function renderWithCart(ui: ReactElement) {
+  return render(<CartProvider>{ui}</CartProvider>);
+}
 
 const PRODUCTS = [
   {
@@ -41,7 +47,7 @@ afterEach(() => {
 test("renders the backend health status once the fetch resolves (non-production only)", async () => {
   mockBackend();
 
-  render(<Home />);
+  renderWithCart(<Home />);
 
   expect(await screen.findByText(/backend status: ok/i)).toBeDefined();
 });
@@ -49,7 +55,7 @@ test("renders the backend health status once the fetch resolves (non-production 
 test("renders a grid of products fetched from the public catalog, each linking to its detail page", async () => {
   mockBackend();
 
-  render(<Home />);
+  renderWithCart(<Home />);
 
   expect(await screen.findByText("Camp Tee")).toBeDefined();
   expect(screen.getByText("Camp Hoodie")).toBeDefined();
@@ -69,7 +75,7 @@ test("shows a message when there are no products", async () => {
     return new Response(JSON.stringify([]), { status: 200 });
   }) as unknown as typeof fetch;
 
-  render(<Home />);
+  renderWithCart(<Home />);
 
   expect(await screen.findByText(/no products available yet/i)).toBeDefined();
 });

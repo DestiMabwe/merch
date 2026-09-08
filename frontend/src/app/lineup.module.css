@@ -5,6 +5,23 @@
   flex-direction: column;
 }
 
+.cartLink {
+  position: absolute;
+  top: 1.5rem;
+  left: 1.75rem;
+  z-index: 2;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--ink);
+  border: 1px solid var(--ink-dim);
+  padding: 0.4rem 0.75rem;
+  transition: border-color 120ms ease;
+}
+
+.cartLink:hover {
+  border-color: var(--ink);
+}
+
 .mark {
   position: absolute;
   top: 1.5rem;
@@ -281,23 +298,139 @@
   color: var(--ink-dim);
 }
 
-.notice {
-  margin-top: 3rem;
-  padding-top: 1.5rem;
-  border-top: 1px solid rgba(253, 246, 227, 0.15);
-  font-size: 0.85rem;
-  color: var(--ink-dim);
-  max-width: 46ch;
+.addToCartRow {
+  margin-top: 0.85rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
 }
 
-.noticeTitle {
-  font-family: var(--font-billing-display), sans-serif;
-  font-weight: 400;
-  text-transform: uppercase;
-  letter-spacing: 0.01em;
-  font-size: 1rem;
+.quantityInput {
+  width: 4rem;
+  background: transparent;
+  border: 1px solid var(--ink-dim);
   color: var(--ink);
-  margin-bottom: 0.4rem;
+  font: inherit;
+  padding: 0.5rem;
+  text-align: center;
+}
+
+.addToCartButton {
+  background: var(--accent);
+  color: var(--ground);
+  font: inherit;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  font-size: 0.78rem;
+  border: none;
+  padding: 0.6rem 1.1rem;
+  cursor: pointer;
+}
+
+.addToCartButton:hover {
+  filter: brightness(1.08);
+}
+
+.cartList {
+  margin-top: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  list-style: none;
+}
+
+.cartRow {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid rgba(253, 246, 227, 0.15);
+}
+
+.cartRowInfo {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.cartRowName {
+  font-weight: 700;
+}
+
+.cartRowVariant {
+  font-size: 0.8rem;
+  color: var(--ink-dim);
+}
+
+.cartRowLineTotal {
+  font-weight: 700;
+  min-width: 4rem;
+  text-align: right;
+}
+
+.cartRemoveButton {
+  background: none;
+  border: 1px solid var(--ink-dim);
+  color: var(--ink-dim);
+  font: inherit;
+  width: 2.25rem;
+  height: 2.25rem;
+  cursor: pointer;
+  transition: border-color 120ms ease, color 120ms ease;
+}
+
+.cartRemoveButton:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.cartSubtotal {
+  margin-top: 1.5rem;
+  font-size: 1.1rem;
+  font-weight: 700;
+  text-align: right;
+}
+
+.checkoutForm {
+  margin-top: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  max-width: 28rem;
+}
+
+.checkoutField {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.checkoutLabel {
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--ink-dim);
+}
+
+.checkoutInput {
+  background: transparent;
+  border: 1px solid var(--ink-dim);
+  color: var(--ink);
+  font: inherit;
+  padding: 0.6rem 0.7rem;
+}
+
+.checkoutInput:focus-visible {
+  border-color: var(--ink);
+}
+
+.checkoutHint {
+  font-size: 0.75rem;
+  color: var(--ink-dim);
 }
 
 .footer {

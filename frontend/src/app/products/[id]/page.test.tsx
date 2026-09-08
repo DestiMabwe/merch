@@ -1,7 +1,13 @@
 import { afterEach, expect, mock, test } from "bun:test";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import type { ReactElement } from "react";
 
+import { CartProvider } from "@/lib/cart-context";
 import ProductDetailPage from "./page";
+
+function renderWithCart(ui: ReactElement) {
+  return render(<CartProvider>{ui}</CartProvider>);
+}
 
 const PRODUCT = {
   id: 1,
@@ -35,7 +41,7 @@ afterEach(() => {
 test("a zero-stock variant is disabled and cannot be selected", async () => {
   mockBackend();
 
-  render(<ProductDetailPage params={Promise.resolve({ id: "1" })} />);
+  renderWithCart(<ProductDetailPage params={Promise.resolve({ id: "1" })} />);
 
   const soldOutButton = (await screen.findByRole("button", { name: "L" })) as HTMLButtonElement;
   expect(soldOutButton.disabled).toBe(true);
@@ -47,7 +53,7 @@ test("a zero-stock variant is disabled and cannot be selected", async () => {
 test("selecting an in-stock variant shows its price and stock", async () => {
   mockBackend();
 
-  render(<ProductDetailPage params={Promise.resolve({ id: "1" })} />);
+  renderWithCart(<ProductDetailPage params={Promise.resolve({ id: "1" })} />);
 
   const inStockButton = (await screen.findByRole("button", { name: "M" })) as HTMLButtonElement;
   expect(inStockButton.disabled).toBe(false);
@@ -67,7 +73,7 @@ test("shows a not-found message for a missing product", async () => {
     return new Response("not found", { status: 404 });
   }) as unknown as typeof fetch;
 
-  render(<ProductDetailPage params={Promise.resolve({ id: "999" })} />);
+  renderWithCart(<ProductDetailPage params={Promise.resolve({ id: "999" })} />);
 
   expect(await screen.findByText(/product not found/i)).toBeDefined();
 });

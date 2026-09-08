@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Anton, Public_Sans } from "next/font/google";
+import { CartProvider } from "@/lib/cart-context";
 import "./globals.css";
 
 const billingDisplay = Anton({
@@ -23,7 +24,9 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="en" className={`${billingDisplay.variable} ${bulletinText.variable}`}>
-      <body suppressHydrationWarning>{children}</body>
+      <body suppressHydrationWarning>
+        <CartProvider>{children}</CartProvider>
+      </body>
     </html>
   );
 }

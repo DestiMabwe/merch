@@ -1,0 +1,103 @@
+.notice {
+  margin-top: 3rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid rgba(253, 246, 227, 0.15);
+  max-width: 32rem;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.noticeTitle {
+  font-family: var(--font-billing-display), sans-serif;
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: 0.01em;
+  font-size: 1.1rem;
+  color: var(--ink);
+  text-align: center;
+}
+
+.noticeSub {
+  margin-top: 0.35rem;
+  font-size: 0.85rem;
+  color: var(--ink-dim);
+  text-align: center;
+}
+
+.fieldList {
+  margin-top: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.fieldLabel {
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--ink-dim);
+}
+
+.fieldValue {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+
+.fieldValue span {
+  flex: 1;
+}
+
+.nameInput {
+  flex: 1;
+  min-width: 0;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--ink-dim);
+  color: var(--ink);
+  font: inherit;
+  font-weight: 700;
+  padding: 0.15rem 0;
+}
+
+.nameInput::placeholder {
+  color: var(--ink-dim);
+  font-weight: 400;
+}
+
+.copyButton {
+  flex-shrink: 0;
+  background: none;
+  font: inherit;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-size: 0.68rem;
+  border: 1px solid var(--ink-dim);
+  color: var(--ink-dim);
+  padding: 0.4rem 0.7rem;
+  min-height: 2.25rem;
+  min-width: 4.25rem;
+  cursor: pointer;
+  transition: background-color 120ms ease, color 120ms ease, border-color 120ms ease;
+}
+
+.copyButton:hover {
+  border-color: var(--ink);
+  color: var(--ink);
+}
+
+.fieldHint {
+  font-size: 0.75rem;
+  color: var(--ink-dim);
+  font-weight: 400;
+}

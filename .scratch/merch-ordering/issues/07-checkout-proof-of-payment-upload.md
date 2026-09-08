@@ -20,4 +20,4 @@ An optional file upload field in the checkout flow letting the customer attach a
 ## Blocked by
 
 - 03-catalog-management
-- 05-cart-checkout-stock-reservation
+- 05-cart-checkout

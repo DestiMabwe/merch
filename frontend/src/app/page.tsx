@@ -3,7 +3,8 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { listPublicProducts, priceLabel, type PublicProduct } from "@/lib/storefront";
-import { StorefrontFooter, StorefrontMark } from "./storefront-chrome";
+import { CartLink, StorefrontFooter, StorefrontMark } from "./storefront-chrome";
+import { BankingDetails } from "./banking-details";
 import styles from "./lineup.module.css";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8000";
@@ -28,6 +29,7 @@ export default function Home() {
 
   return (
     <div className={styles.page}>
+      <CartLink />
       <StorefrontMark />
 
       <div className={styles.sheet}>
@@ -80,13 +82,7 @@ export default function Home() {
           <p className={styles.tagline}>No products available yet — check back soon.</p>
         )}
 
-        <div className={styles.notice}>
-          <p className={styles.noticeTitle}>How to pay &amp; collect</p>
-          <p>
-            Pay by EFT after ordering — bank details and your order reference will show at
-            checkout. Pickup at camp only; no shipping.
-          </p>
-        </div>
+        <BankingDetails />
       </div>
 
       <StorefrontFooter status={status} />
