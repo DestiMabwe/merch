@@ -22,3 +22,15 @@ Seeded admin accounts and a login flow so admin staff can authenticate. Backend:
 ## Blocked by
 
 - 01-project-scaffolding
+
+## Comments
+
+- Implemented 2026-09-08: `AdminUser` model + Alembic migration, `app/auth.py`
+  (bcrypt hashing, JWT issue/verify, `get_current_admin` guard dependency),
+  `app/routers/admin.py` (`POST /admin/login`, `GET /admin/me`), and
+  `app/seed_admin.py` (idempotent seeding from `ADMIN_SEED_ACCOUNTS`) on the
+  backend. Frontend adds `/admin/login` and a route-group-guarded `/admin`
+  home page that stores the JWT in `localStorage` and sends it as a bearer
+  token. Verified manually end-to-end (login success/failure, guarded
+  redirect, reload persistence, logout) per the PRD's testing scope, which
+  excludes admin auth from automated coverage.

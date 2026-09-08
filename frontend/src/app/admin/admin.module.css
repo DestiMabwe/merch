@@ -1,0 +1,263 @@
+.screen {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+}
+
+.card {
+  width: 100%;
+  max-width: 22rem;
+  padding: 2rem;
+  border: 1px solid rgba(253, 246, 227, 0.15);
+  background: rgba(253, 246, 227, 0.03);
+}
+
+.title {
+  font-family: var(--font-billing-display), sans-serif;
+  font-weight: 400;
+  text-transform: uppercase;
+  font-size: 1.6rem;
+  margin-bottom: 1.5rem;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin-bottom: 1rem;
+}
+
+.label {
+  font-size: 0.8rem;
+  color: var(--ink-dim);
+}
+
+.input {
+  font: inherit;
+  color: var(--ink);
+  background: var(--ground);
+  border: 1px solid var(--ink-dim);
+  padding: 0.6rem 0.7rem;
+  min-height: 2.5rem;
+}
+
+.input:focus-visible {
+  border-color: var(--ink);
+}
+
+.error {
+  color: var(--accent);
+  font-size: 0.82rem;
+  margin-bottom: 1rem;
+}
+
+.submit {
+  width: 100%;
+  background: var(--accent);
+  border: 2px solid var(--accent);
+  color: var(--ground);
+  font-weight: 700;
+  font-size: 0.85rem;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  cursor: pointer;
+  min-height: 2.5rem;
+  padding: 0.5rem 0.9rem;
+  margin-top: 0.5rem;
+}
+
+.submit:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.25rem 1.75rem;
+  border-bottom: 1px solid rgba(253, 246, 227, 0.15);
+}
+
+.headerTitle {
+  font-family: var(--font-billing-display), sans-serif;
+  font-weight: 400;
+  text-transform: uppercase;
+  font-size: 1.1rem;
+}
+
+.headerRight {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.headerEmail {
+  font-size: 0.8rem;
+  color: var(--ink-dim);
+}
+
+.logoutButton {
+  background: none;
+  border: 1px solid var(--ink-dim);
+  color: var(--ink-dim);
+  font: inherit;
+  font-size: 0.78rem;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  cursor: pointer;
+  padding: 0.45rem 0.8rem;
+}
+
+.logoutButton:hover {
+  border-color: var(--ink);
+  color: var(--ink);
+}
+
+.main {
+  padding: 2rem 1.75rem;
+}
+
+.pageHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.backLink {
+  display: inline-block;
+  font-size: 0.8rem;
+  color: var(--ink-dim);
+  margin-bottom: 1rem;
+}
+
+.backLink:hover {
+  color: var(--ink);
+}
+
+.linkButton {
+  display: inline-block;
+  background: var(--accent);
+  border: 2px solid var(--accent);
+  color: var(--ground);
+  font-weight: 700;
+  font-size: 0.8rem;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  cursor: pointer;
+  padding: 0.5rem 0.9rem;
+}
+
+.secondaryButton {
+  background: none;
+  border: 1px solid var(--ink-dim);
+  color: var(--ink-dim);
+  font: inherit;
+  font-size: 0.78rem;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  cursor: pointer;
+  padding: 0.4rem 0.75rem;
+}
+
+.secondaryButton:hover:not(:disabled) {
+  border-color: var(--ink);
+  color: var(--ink);
+}
+
+.secondaryButton:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+}
+
+.table th,
+.table td {
+  text-align: left;
+  padding: 0.6rem 0.75rem;
+  border-bottom: 1px solid rgba(253, 246, 227, 0.12);
+}
+
+.table th {
+  color: var(--ink-dim);
+  font-weight: 500;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.badge {
+  display: inline-block;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  padding: 0.2rem 0.5rem;
+  border: 1px solid currentColor;
+}
+
+.badgeActive {
+  color: var(--accent);
+}
+
+.badgeInactive {
+  color: var(--ink-dim);
+}
+
+.section {
+  margin-bottom: 2.5rem;
+}
+
+.sectionTitle {
+  font-family: var(--font-billing-display), sans-serif;
+  font-weight: 400;
+  text-transform: uppercase;
+  font-size: 1.1rem;
+  margin-bottom: 1rem;
+}
+
+.checkboxField {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  font-size: 0.85rem;
+}
+
+.photoPreview {
+  display: block;
+  max-width: 12rem;
+  height: auto;
+  border: 1px solid rgba(253, 246, 227, 0.15);
+  margin-bottom: 1rem;
+}
+
+.variantRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 0.75rem;
+}
+
+.variantInput {
+  font: inherit;
+  color: var(--ink);
+  background: var(--ground);
+  border: 1px solid var(--ink-dim);
+  padding: 0.4rem 0.55rem;
+  min-height: 2.25rem;
+  width: 5.5rem;
+}
+
+.variantInput:focus-visible {
+  border-color: var(--ink);
+}

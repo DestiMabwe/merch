@@ -21,3 +21,22 @@ The public, unauthenticated storefront pages that let customers browse the catal
 ## Blocked by
 
 - 03-catalog-management
+
+## Comments
+
+- Implemented 2026-09-08: `app/routers/storefront.py` adds public
+  `GET /products` and `GET /products/{id}` (no auth dependency) — both
+  filter to active products and, within them, active variants only; the
+  detail route 404s for a deactivated or missing product id, not just
+  omits it from the list. Frontend: `src/app/page.tsx` now fetches real
+  products instead of the old hardcoded mock and renders them as the
+  existing graffiti gallery cards (photo/name/price), each linking to a
+  new `src/app/products/[id]/page.tsx` detail page with a variant picker
+  reusing the `.sizeChip` styling — zero-stock variants render
+  struck-through, `disabled`, and unselectable. The old "pin to cart"
+  placeholder UI (and its tests) was removed since it wasn't a real
+  feature; issue 05 builds the actual cart. Verified manually via curl
+  (active/inactive filtering, 404 on a deactivated product) and in the
+  browser (grid, detail page, sold-out disabling, mobile width), plus new
+  `bun test` coverage for the grid rendering and the sold-out-cannot-be-
+  selected behavior specifically.

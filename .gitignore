@@ -1,0 +1,26 @@
+# Python / backend
+backend/.venv/
+backend/__pycache__/
+backend/**/__pycache__/
+*.pyc
+backend/camp_merch_store.db
+backend/uploads/*
+!backend/uploads/.gitkeep
+backend/.env
+
+# Node / frontend
+frontend/node_modules/
+frontend/.next/
+frontend/tsconfig.tsbuildinfo
+
+# Env files (keep .env.example)
+.env
+*.env
+!*.env.example
+
+# Tool-generated design/review cache
+.impeccable/
+
+# OS
+.DS_Store
+Thumbs.db

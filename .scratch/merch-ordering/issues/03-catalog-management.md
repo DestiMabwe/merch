@@ -23,3 +23,23 @@ The catalog data model (products with size/color variants) and full admin CRUD f
 
 - 01-project-scaffolding
 - 02-admin-auth-login
+
+## Comments
+
+- Implemented 2026-09-08: `Product`/`Variant` models + Alembic migration
+  (variants have their own price/stock/active, unique on
+  product_id+size+color). `app/storage.py` adds the `FileStorage`
+  abstraction (`LocalFileStorage` writing to `UPLOAD_DIR`, served at
+  `/uploads/...`, swappable later for S3). `app/routers/catalog.py` adds
+  `/admin/products` CRUD (list/create/get/patch, photo upload, variant
+  create/patch) all gated by the existing `get_current_admin` dependency —
+  no route bypasses it. Deactivation is a boolean field via PATCH, not a
+  delete endpoint, on both products and variants; there is no delete
+  endpoint anywhere. Frontend adds `/admin/products` (list),
+  `/admin/products/new` (create with at least one variant row), and
+  `/admin/products/[id]` (edit details, upload/preview photo, edit
+  variants inline, add a variant) under the existing `(protected)` route
+  group. Verified manually end-to-end (curl for every endpoint including
+  the 401-without-token case, then the same flows through the browser UI)
+  per the PRD's testing scope, which excludes catalog CRUD and file
+  storage from automated coverage, same as admin auth.
