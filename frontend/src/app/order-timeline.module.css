@@ -1,0 +1,109 @@
+.orderNumber {
+  margin-top: 1.5rem;
+  padding: 1rem 1.25rem;
+  border: 1px solid rgba(253, 246, 227, 0.15);
+}
+
+.orderNumberLabel {
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--ink-dim);
+}
+
+.orderNumberRow {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 0.4rem;
+}
+
+.orderNumberValue {
+  flex: 1;
+  min-width: 0;
+  font-size: 1.1rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  word-break: break-word;
+}
+
+.copyButton {
+  flex-shrink: 0;
+  background: none;
+  font: inherit;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-size: 0.68rem;
+  border: 1px solid var(--ink-dim);
+  color: var(--ink-dim);
+  padding: 0.4rem 0.7rem;
+  min-height: 2.25rem;
+  min-width: 4.25rem;
+  cursor: pointer;
+  transition: background-color 120ms ease, color 120ms ease, border-color 120ms ease;
+}
+
+.copyButton:hover {
+  border-color: var(--ink);
+  color: var(--ink);
+}
+
+.orderNumberHint {
+  margin-top: 0.6rem;
+  font-size: 0.78rem;
+  color: var(--ink-dim);
+}
+
+.timeline {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.25rem 0.75rem;
+  list-style: none;
+  margin-top: 1.5rem;
+}
+
+.stage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  flex: 1 1 6rem;
+  text-align: center;
+}
+
+.stageMarker {
+  width: 10px;
+  height: 10px;
+  border: 1px solid var(--ink-dim);
+  background: transparent;
+}
+
+.stage--done .stageMarker,
+.stage--current .stageMarker {
+  background: var(--ink);
+  border-color: var(--ink);
+}
+
+.stageLabel {
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--ink-dim);
+}
+
+.stage--done .stageLabel {
+  color: var(--ink);
+}
+
+.stage--current .stageLabel {
+  color: var(--ink);
+  font-weight: 700;
+}
+
+.cancelledNote {
+  margin-top: 1.5rem;
+  font-size: 0.85rem;
+  color: var(--ink-dim);
+  text-align: center;
+}

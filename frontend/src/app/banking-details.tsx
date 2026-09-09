@@ -1,23 +1,15 @@
 "use client";
 
 import { useState } from "react";
+import { copyText } from "@/lib/clipboard";
 import styles from "./banking-details.module.css";
 
 const BANK_FIELDS = [
   { key: "bank", label: "Bank", value: "Capitec" },
   { key: "accountType", label: "Account Type", value: "Savings Account" },
-  { key: "accountNumber", label: "Account Number", value: "2467898187" },
+  { key: "accountNumber", label: "Account Number", value: "2467898187", copyable: true },
   { key: "branchCode", label: "Branch Code", value: "470010" },
 ];
-
-async function copyText(text: string) {
-  try {
-    await navigator.clipboard.writeText(text);
-    return true;
-  } catch {
-    return false;
-  }
-}
 
 function useCopyField() {
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
@@ -47,13 +39,15 @@ function BankAccountFields({
           <dt className={styles.fieldLabel}>{field.label}</dt>
           <dd className={styles.fieldValue}>
             <span>{field.value}</span>
-            <button
-              type="button"
-              className={styles.copyButton}
-              onClick={() => onCopy(field.key, field.value)}
-            >
-              {copiedKey === field.key ? "Copied!" : "Copy"}
-            </button>
+            {field.copyable && (
+              <button
+                type="button"
+                className={styles.copyButton}
+                onClick={() => onCopy(field.key, field.value)}
+              >
+                {copiedKey === field.key ? "Copied!" : "Copy"}
+              </button>
+            )}
           </dd>
         </div>
       ))}
@@ -62,16 +56,13 @@ function BankAccountFields({
 }
 
 export function BankingDetails() {
-  const [name, setName] = useState("");
   const { copiedKey, handleCopy } = useCopyField();
-
-  const reference = `${name.trim() || "Your Name"} Merch`;
 
   return (
     <div className={styles.notice}>
       <p className={styles.noticeTitle}>🏦 Banking Details</p>
       <p className={styles.noticeSub}>
-        Pay by EFT after ordering. Pickup at camp only; no shipping.
+        Pay by EFT after ordering. Collect from Forward In Faith Ministries Int., 7 Spencer Road, Maitland; no shipping.
       </p>
 
       <dl className={styles.fieldList}>
@@ -80,40 +71,32 @@ export function BankingDetails() {
         <div className={styles.field}>
           <dt className={styles.fieldLabel}>Reference</dt>
           <dd className={styles.fieldValue}>
-            <input
-              type="text"
-              value={name}
-              onChange={(event) => setName(event.target.value)}
-              placeholder="Your Name"
-              aria-label="Your name, for the payment reference"
-              className={styles.nameInput}
-            />
-            <button
-              type="button"
-              className={styles.copyButton}
-              onClick={() => handleCopy("reference", reference)}
-            >
-              {copiedKey === "reference" ? "Copied!" : "Copy"}
-            </button>
+            <span>Your Name + &ldquo;Merch&rdquo;</span>
           </dd>
           <p className={styles.fieldHint}>
-            Type your name above, then copy <strong>&ldquo;{reference}&rdquo;</strong> as your
-            payment reference so we can match your EFT to your order.
+            Banks require a reference for EFT payments — write your name followed by
+            &ldquo;Merch&rdquo; (e.g. &ldquo;Jane Smith Merch&rdquo;) so we can match your
+            payment to you.
           </p>
         </div>
       </dl>
+
+      <p className={styles.footnote}>
+        An order number for tracking becomes available once you complete checkout.
+      </p>
     </div>
   );
 }
 
-export function OrderPaymentDetails({ reference }: { reference: string }) {
+export function OrderPaymentDetails({ customerName }: { customerName: string }) {
   const { copiedKey, handleCopy } = useCopyField();
+  const paymentReference = `${customerName} Merch`;
 
   return (
     <div className={styles.notice}>
       <p className={styles.noticeTitle}>🏦 Banking Details</p>
       <p className={styles.noticeSub}>
-        Pay by EFT using the details below. Pickup at camp only; no shipping.
+        Pay by EFT using the details below. Collect from Forward In Faith Ministries Int., 7 Spencer Road, Maitland; no shipping.
       </p>
 
       <dl className={styles.fieldList}>
@@ -122,18 +105,11 @@ export function OrderPaymentDetails({ reference }: { reference: string }) {
         <div className={styles.field}>
           <dt className={styles.fieldLabel}>Reference</dt>
           <dd className={styles.fieldValue}>
-            <span>{reference}</span>
-            <button
-              type="button"
-              className={styles.copyButton}
-              onClick={() => handleCopy("reference", reference)}
-            >
-              {copiedKey === "reference" ? "Copied!" : "Copy"}
-            </button>
+            <span>{paymentReference}</span>
           </dd>
           <p className={styles.fieldHint}>
-            Use <strong>&ldquo;{reference}&rdquo;</strong> as your payment reference so we can
-            match your EFT to this order.
+            Use <strong>&ldquo;{paymentReference}&rdquo;</strong> as your payment reference so we
+            can match your EFT to you.
           </p>
         </div>
       </dl>

@@ -57,23 +57,6 @@
   flex: 1;
 }
 
-.nameInput {
-  flex: 1;
-  min-width: 0;
-  background: transparent;
-  border: none;
-  border-bottom: 1px solid var(--ink-dim);
-  color: var(--ink);
-  font: inherit;
-  font-weight: 700;
-  padding: 0.15rem 0;
-}
-
-.nameInput::placeholder {
-  color: var(--ink-dim);
-  font-weight: 400;
-}
-
 .copyButton {
   flex-shrink: 0;
   background: none;
@@ -100,4 +83,12 @@
   font-size: 0.75rem;
   color: var(--ink-dim);
   font-weight: 400;
+}
+
+.footnote {
+  margin-top: 1.25rem;
+  font-size: 0.68rem;
+  color: var(--ink-dim);
+  font-weight: 400;
+  text-align: center;
 }
