@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
 from pydantic import BaseModel, Field
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session, selectinload
 
 from app.auth import get_current_admin
@@ -127,11 +128,22 @@ def upload_product_photo(
     return product
 
 
+def _commit_or_duplicate_variant_error(db: Session) -> None:
+    try:
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="A variant with that size and color already exists",
+        )
+
+
 @router.post("/{product_id}/variants", response_model=ProductOut, status_code=status.HTTP_201_CREATED)
 def create_variant(product_id: int, body: VariantCreate, db: Session = Depends(get_db)) -> Product:
     product = _get_product_or_404(db, product_id)
     product.variants.append(Variant(**body.model_dump()))
-    db.commit()
+    _commit_or_duplicate_variant_error(db)
     db.refresh(product)
     return product
 
@@ -143,5 +155,5 @@ def update_variant(
     variant = _get_variant_or_404(db, product_id, variant_id)
     for field, value in body.model_dump(exclude_unset=True).items():
         setattr(variant, field, value)
-    db.commit()
+    _commit_or_duplicate_variant_error(db)
     return _get_product_or_404(db, product_id)
