@@ -1,0 +1,48 @@
+databases:
+  - name: camp-merch-db
+    plan: free
+    databaseName: camp_merch_store
+    user: camp_merch
+
+services:
+  - type: web
+    name: camp-merch-backend
+    runtime: python
+    plan: free
+    rootDir: backend
+    buildCommand: pip install uv && uv sync --frozen && uv run alembic upgrade head && uv run python -m app.seed_admin
+    startCommand: uv run uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: camp-merch-db
+          property: connectionString
+      - key: JWT_SECRET_KEY
+        generateValue: true
+      - key: JWT_EXPIRE_MINUTES
+        value: "720"
+      # Set after the Vercel frontend is deployed — its exact URL (e.g.
+      # https://camp-merch.vercel.app), comma-separated if there's more than one.
+      - key: CORS_ALLOWED_ORIGINS
+        sync: false
+      # "email:password,email:password" — the real admin accounts for this deploy.
+      # Rotate the passwords already shown in chat rather than reusing them verbatim.
+      - key: ADMIN_SEED_ACCOUNTS
+        sync: false
+      # Object storage (Cloudflare R2 or any S3-compatible bucket) for uploaded
+      # proof-of-payment screenshots and product photos — required, since this
+      # service's own disk is wiped on every deploy/restart.
+      - key: S3_BUCKET
+        sync: false
+      - key: S3_ENDPOINT_URL
+        sync: false
+      - key: S3_ACCESS_KEY_ID
+        sync: false
+      - key: S3_SECRET_ACCESS_KEY
+        sync: false
+      # The bucket's public base URL (R2 public bucket URL or custom domain) —
+      # uploaded file URLs are built as "{S3_PUBLIC_BASE_URL}/{folder}/{filename}".
+      - key: S3_PUBLIC_BASE_URL
+        sync: false
+      - key: NOTIFICATIONS_FROM_EMAIL
+        value: no-reply@campmerch.local
