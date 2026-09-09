@@ -39,7 +39,7 @@ export default function Home() {
           Pressure
         </h1>
         <p className={styles.tagline}>
-          This year&rsquo;s camp drop. He has a plan &amp; I have a purpose.
+          Our fundraiser merch drop. He has a plan &amp; I have a purpose.
         </p>
         <p className={styles.verse}>
           So we are convinced that every detail of our lives is continually woven together for

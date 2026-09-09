@@ -13,7 +13,7 @@ function variantLabel(size: string | null, color: string | null): string {
 }
 
 export default function CartPage() {
-  const { items, subtotal, setQuantity, removeItem } = useCart();
+  const { items, subtotal, setQuantity, removeItem, hydrated } = useCart();
   const [status, setStatus] = useState<string | null>(null);
 
   useEffect(() => {
@@ -34,7 +34,9 @@ export default function CartPage() {
 
         <h1 className={styles.headline}>Your Cart</h1>
 
-        {items.length === 0 ? (
+        {!hydrated ? (
+          <p className={styles.tagline}>Loading…</p>
+        ) : items.length === 0 ? (
           <p className={styles.tagline}>
             Your cart is empty. <Link href="/">Go pick something out</Link>.
           </p>

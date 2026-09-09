@@ -16,9 +16,9 @@ const bulletinText = Public_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "Purpose Over Pressure — Camp Merch | Forward In Faith",
+  title: "Purpose Over Pressure — Merch Fundraiser | Forward In Faith",
   description:
-    "This year's camp merch drop from Forward In Faith Ministries Int. Order a tee, crewneck, or hoodie — pickup only, pay by EFT.",
+    "A merch fundraiser from Forward In Faith Ministries Int. Order a tee, crewneck, or hoodie — collect at church, pay by EFT.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

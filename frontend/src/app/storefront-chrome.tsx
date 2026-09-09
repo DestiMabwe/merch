@@ -33,6 +33,9 @@ export function StorefrontFooter({ status }: { status: string | null }) {
         className={styles.footerMark}
       />
       <p className={styles.footerText}>Bound by the Spirit of God</p>
+      <Link href="/orders" className={styles.footerLink}>
+        Track your order →
+      </Link>
       {process.env.NODE_ENV !== "production" && (
         <p className={styles.status}>Backend status: {status ?? "checking..."}</p>
       )}

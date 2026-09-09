@@ -41,3 +41,19 @@ export function priceLabel(variants: PublicVariant[]): string {
 export function variantLabel(variant: PublicVariant): string {
   return [variant.size, variant.color].filter(Boolean).join(" / ") || "One size";
 }
+
+export function groupVariantsByColor(
+  variants: PublicVariant[],
+): { color: string; variants: PublicVariant[] }[] {
+  const groups: { color: string; variants: PublicVariant[] }[] = [];
+  for (const variant of variants) {
+    const color = variant.color ?? "One color";
+    const group = groups.find((g) => g.color === color);
+    if (group) {
+      group.variants.push(variant);
+    } else {
+      groups.push({ color, variants: [variant] });
+    }
+  }
+  return groups;
+}

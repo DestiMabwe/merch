@@ -119,7 +119,8 @@
 
 .backLink {
   display: inline-block;
-  margin-top: 1rem;
+  margin: 0.15rem 0 -0.85rem -0.85rem;
+  padding: 0.85rem;
   color: var(--accent);
   font-weight: 700;
   text-transform: uppercase;
@@ -248,6 +249,30 @@
   padding: 0.5rem;
 }
 
+.purchasePanel {
+  margin-top: 2.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid rgba(253, 246, 227, 0.15);
+  max-width: 32rem;
+  margin-left: auto;
+  margin-right: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.variantGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.purchaseAction {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
 .sizeRow {
   display: flex;
   flex-wrap: wrap;
@@ -293,13 +318,16 @@
 }
 
 .selectedVariant {
-  margin-top: 1rem;
+  font-size: 0.85rem;
+  color: var(--ink-dim);
+}
+
+.panelNote {
   font-size: 0.85rem;
   color: var(--ink-dim);
 }
 
 .addToCartRow {
-  margin-top: 0.85rem;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -314,6 +342,78 @@
   font: inherit;
   padding: 0.5rem;
   text-align: center;
+}
+
+.stepper {
+  display: flex;
+  align-items: stretch;
+  border: 1px solid var(--ink-dim);
+}
+
+.stepperButton {
+  background: none;
+  border: none;
+  color: var(--ink);
+  font: inherit;
+  font-size: 1rem;
+  min-width: 2.5rem;
+  min-height: 2.5rem;
+  cursor: pointer;
+}
+
+.stepperButton:hover:not(:disabled) {
+  background: rgba(253, 246, 227, 0.08);
+}
+
+.stepperButton:disabled {
+  color: var(--ink-dim);
+  opacity: 0.4;
+  cursor: default;
+}
+
+.stepperInput {
+  width: 2.75rem;
+  background: transparent;
+  border: none;
+  border-left: 1px solid var(--ink-dim);
+  border-right: 1px solid var(--ink-dim);
+  color: var(--ink);
+  font: inherit;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+  -moz-appearance: textfield;
+}
+
+.stepperInput::-webkit-outer-spin-button,
+.stepperInput::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.toast {
+  position: fixed;
+  bottom: 1.5rem;
+  left: 50%;
+  z-index: 10;
+  max-width: calc(100vw - 2rem);
+  background: var(--ink);
+  color: var(--ground);
+  font-size: 0.85rem;
+  font-weight: 700;
+  padding: 0.75rem 1.25rem;
+  text-align: center;
+  animation: toastIn 220ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes toastIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 0.5rem);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
 }
 
 .addToCartButton {
@@ -433,6 +533,23 @@
   color: var(--ink-dim);
 }
 
+.notice {
+  margin-top: 2.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid rgba(253, 246, 227, 0.15);
+  max-width: 32rem;
+}
+
+.noticeTitle {
+  font-family: var(--font-billing-display), sans-serif;
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: 0.01em;
+  font-size: 1.1rem;
+  color: var(--ink);
+  margin-bottom: 1rem;
+}
+
 .footer {
   padding: 2rem 1.75rem 2.5rem;
   display: flex;
@@ -452,6 +569,12 @@
 .footerText {
   font-size: 0.75rem;
   color: var(--ink-dim);
+}
+
+.footerLink {
+  font-size: 0.75rem;
+  color: var(--accent);
+  font-weight: 700;
 }
 
 .status {
