@@ -22,3 +22,22 @@ The admin action of confirming payment on an order - ticking it as received, and
 
 - 03-catalog-management
 - 09-admin-order-queue-detail
+
+## Comments
+
+- Implemented 2026-09-08 via TDD: `app/order_lifecycle.py` is a pure
+  `transition(current_status, target_status) -> str` function over a
+  static transition table (raises `InvalidTransitionError` otherwise) -
+  no DB/HTTP dependency, per the PRD's testing note. `tests/test_order_lifecycle.py`
+  covers it directly: valid `pending_payment -> paid`, an invalid skip
+  straight to `ready_for_collection`, and rejecting a repeat `paid -> paid`
+  attempt (the exact AC case). The table also encodes the `ready_for_collection`/
+  `collected`/`cancelled` edges from the PRD, left dormant until 11/12/14
+  wire them up. `POST /admin/orders/{reference}/mark-paid` and
+  `POST /admin/orders/{reference}/proof` (admin-side upload/replace, no
+  contact check needed since it's behind the admin guard) added to
+  `admin_orders.py`. Frontend: the order detail page gets a "Mark payment
+  received" button (shown only in `pending_payment`) and a proof
+  upload/replace control. Verified manually via curl (mark paid, reject
+  repeat, unauthenticated 401, admin proof upload) and in the browser.
+

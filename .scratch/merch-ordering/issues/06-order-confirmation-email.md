@@ -20,3 +20,17 @@ An order-confirmation email sent automatically right after checkout, containing 
 ## Blocked by
 
 - 05-cart-checkout
+
+## Comments
+
+- Implemented 2026-09-08: `app/notifications.py` defines `Notifier` with
+  `send_order_confirmation(order)`; `ConsoleNotifier` (prints to stdout) is
+  used unless `SMTP_HOST` is set, in which case `SmtpNotifier` sends via
+  `smtplib`. `get_notifier()` picks between them, mirroring the
+  `get_storage()` pattern. Called from `POST /orders` right after commit,
+  wrapped in a bare `try/except: pass` so a send failure never fails or
+  rolls back the order. Skipped entirely when the order has no email
+  (phone-only checkout). Verified manually: confirmation content prints to
+  the console on checkout with an email, and phone-only checkout completes
+  with no send attempted.
+

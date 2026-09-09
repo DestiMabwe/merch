@@ -21,3 +21,19 @@ The admin-facing order list and detail view - the backbone of the manual reconci
 
 - 02-admin-auth-login
 - 05-cart-checkout
+
+## Comments
+
+- Implemented 2026-09-08: `app/routers/admin_orders.py` adds
+  `GET /admin/orders` (optional `status_filter`, `sort=oldest|newest`,
+  default oldest-first) and `GET /admin/orders/{reference}`, both gated by
+  the existing `get_current_admin` dependency the same way catalog routes
+  are. Frontend adds `/admin/products`-style pages: `/admin/orders` (table
+  with a status badge per row - a distinct color/weight per status rather
+  than plain text - a status/sort control pair, and age shown as
+  relative time) and `/admin/orders/[reference]` (full detail: contact
+  info, line items, total, and a link to the proof-of-payment file if one
+  was uploaded). Verified manually: list with filter/sort, detail view,
+  and that hitting `/admin/orders` while logged out redirects to
+  `/admin/login` via the same guard as the existing protected routes.
+

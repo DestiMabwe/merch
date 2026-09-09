@@ -22,3 +22,20 @@ A public page where a customer enters their order reference plus email or phone 
 
 - 03-catalog-management
 - 05-cart-checkout
+
+## Comments
+
+- Implemented 2026-09-08: `GET /orders/lookup?reference=&email=&phone=` on
+  the backend requires reference plus a matching email or phone (a mismatch
+  or unknown reference both return a plain 404, so there's no way to
+  distinguish "wrong contact" from "no such order" by probing). Frontend
+  adds a public `/orders` page (linked from the storefront footer as "Track
+  your order") with the lookup form; a found order shows its status via a
+  shared `statusLabel()` map (all five states), line items, and total. If
+  there's no proof and the order isn't cancelled, an upload field appears
+  and reuses the same `POST /orders/{reference}/proof` endpoint from
+  07, re-verifying contact on that call too since there's no session token.
+  A non-matching lookup shows inline text, not a thrown error. Verified
+  manually: correct lookup, wrong-contact "not found", and the on-page
+  upload path.
+
