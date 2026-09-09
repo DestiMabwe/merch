@@ -1,8 +1,9 @@
 "use client";
 
-import { use, useEffect, useState, type FormEvent } from "react";
+import { Fragment, use, useEffect, useState, type FormEvent } from "react";
 import Link from "next/link";
 import {
+  CatalogError,
   createVariant,
   getProduct,
   updateProduct,
@@ -13,6 +14,20 @@ import {
   type VariantInput,
 } from "@/lib/catalog";
 import styles from "../../../admin.module.css";
+
+function groupByColor(variants: Variant[]): { color: string; variants: Variant[] }[] {
+  const groups: { color: string; variants: Variant[] }[] = [];
+  for (const variant of variants) {
+    const color = variant.color ?? "One color";
+    const group = groups.find((g) => g.color === color);
+    if (group) {
+      group.variants.push(variant);
+    } else {
+      groups.push({ color, variants: [variant] });
+    }
+  }
+  return groups;
+}
 
 export default function ProductEditPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -48,7 +63,9 @@ export default function ProductEditPage({ params }: { params: Promise<{ id: stri
         setDescription(p.description ?? "");
         setActive(p.active);
       })
-      .catch(() => setLoadError("Couldn't load this product."));
+      .catch((err) =>
+        setLoadError(err instanceof CatalogError ? err.message : "Couldn't load this product."),
+      );
   }, [productId]);
 
   async function handleSaveDetails(e: FormEvent) {
@@ -62,8 +79,10 @@ export default function ProductEditPage({ params }: { params: Promise<{ id: stri
         active,
       });
       setProduct(updated);
-    } catch {
-      setDetailsError("Couldn't save product details.");
+    } catch (err) {
+      setDetailsError(
+        err instanceof CatalogError ? err.message : "Couldn't save product details.",
+      );
     } finally {
       setSavingDetails(false);
     }
@@ -77,8 +96,8 @@ export default function ProductEditPage({ params }: { params: Promise<{ id: stri
       const updated = await uploadProductPhoto(productId, photoFile);
       setProduct(updated);
       setPhotoFile(null);
-    } catch {
-      setPhotoError("Couldn't upload the photo.");
+    } catch (err) {
+      setPhotoError(err instanceof CatalogError ? err.message : "Couldn't upload the photo.");
     } finally {
       setUploadingPhoto(false);
     }
@@ -89,8 +108,8 @@ export default function ProductEditPage({ params }: { params: Promise<{ id: stri
     try {
       const updated = await updateVariant(productId, variantId, body);
       setProduct(updated);
-    } catch {
-      setVariantError("Couldn't save that variant.");
+    } catch (err) {
+      setVariantError(err instanceof CatalogError ? err.message : "Couldn't save that variant.");
     }
   }
 
@@ -102,8 +121,8 @@ export default function ProductEditPage({ params }: { params: Promise<{ id: stri
       const updated = await createVariant(productId, newVariant);
       setProduct(updated);
       setNewVariant({ size: "", color: "", price: 0, stock: 0 });
-    } catch {
-      setVariantError("Couldn't add that variant.");
+    } catch (err) {
+      setVariantError(err instanceof CatalogError ? err.message : "Couldn't add that variant.");
     } finally {
       setAddingVariant(false);
     }
@@ -152,7 +171,7 @@ export default function ProductEditPage({ params }: { params: Promise<{ id: stri
             />
           </div>
           <label className={styles.checkboxField}>
-            <input type="checkbox" checked={active} onChange={(e) => setActive(e.target.checked)} />
+            <input type="checkbox" className={styles.checkbox} checked={active} onChange={(e) => setActive(e.target.checked)} />
             Active (visible in the storefront)
           </label>
           {detailsError && (
@@ -202,23 +221,34 @@ export default function ProductEditPage({ params }: { params: Promise<{ id: stri
             {variantError}
           </p>
         )}
-        <table className={styles.table}>
-          <thead>
-            <tr>
-              <th>Size</th>
-              <th>Color</th>
-              <th>Price</th>
-              <th>Stock</th>
-              <th>Active</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody>
-            {product.variants.map((variant) => (
-              <VariantRow key={variant.id} variant={variant} onSave={handleSaveVariant} />
-            ))}
-          </tbody>
-        </table>
+        <div className={styles.tableScroll}>
+          <table className={`${styles.table} ${styles.tableWide}`}>
+            <thead>
+              <tr>
+                <th>Size</th>
+                <th>Color</th>
+                <th>Price</th>
+                <th>Stock</th>
+                <th>Active</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              {groupByColor(product.variants).map(({ color, variants }) => (
+                <Fragment key={color}>
+                  <tr>
+                    <th className={styles.variantGroupHeading} colSpan={6}>
+                      {color}
+                    </th>
+                  </tr>
+                  {variants.map((variant) => (
+                    <VariantRow key={variant.id} variant={variant} onSave={handleSaveVariant} />
+                  ))}
+                </Fragment>
+              ))}
+            </tbody>
+          </table>
+        </div>
 
         <h3 className={styles.sectionTitle}>Add variant</h3>
         <form onSubmit={handleAddVariant} className={styles.variantRow}>
@@ -313,7 +343,7 @@ function VariantRow({
         />
       </td>
       <td>
-        <input type="checkbox" checked={active} onChange={(e) => setActive(e.target.checked)} />
+        <input type="checkbox" className={styles.checkbox} checked={active} onChange={(e) => setActive(e.target.checked)} />
       </td>
       <td>
         <button type="button" className={styles.secondaryButton} onClick={handleSave} disabled={saving}>

@@ -29,7 +29,19 @@ export type VariantInput = {
 
 export class CatalogError extends Error {}
 
-async function adminFetch(path: string, options: RequestInit = {}): Promise<Response> {
+async function extractErrorMessage(res: Response, fallback: string): Promise<string> {
+  const body = await res.json().catch(() => null);
+  const detail = body?.detail;
+  if (typeof detail === "string") return detail;
+  if (Array.isArray(detail) && detail[0]?.msg) return detail[0].msg as string;
+  return fallback;
+}
+
+async function adminFetch(
+  path: string,
+  options: RequestInit = {},
+  fallback = "That didn't work. Please try again.",
+): Promise<Response> {
   const token = getToken();
   const res = await fetch(`${API_BASE_URL}${path}`, {
     ...options,
@@ -40,26 +52,31 @@ async function adminFetch(path: string, options: RequestInit = {}): Promise<Resp
   });
 
   if (!res.ok) {
-    throw new CatalogError(`Request failed: ${res.status}`);
+    throw new CatalogError(await extractErrorMessage(res, fallback));
   }
 
   return res;
 }
 
-async function adminFetchJson<T>(path: string, options: RequestInit = {}): Promise<T> {
-  const res = await adminFetch(path, {
-    ...options,
-    headers: { "Content-Type": "application/json", ...(options.headers ?? {}) },
-  });
+async function adminFetchJson<T>(
+  path: string,
+  options: RequestInit = {},
+  fallback?: string,
+): Promise<T> {
+  const res = await adminFetch(
+    path,
+    { ...options, headers: { "Content-Type": "application/json", ...(options.headers ?? {}) } },
+    fallback,
+  );
   return (await res.json()) as T;
 }
 
 export function listProducts(): Promise<Product[]> {
-  return adminFetchJson<Product[]>("/admin/products");
+  return adminFetchJson<Product[]>("/admin/products", {}, "Couldn't load products.");
 }
 
 export function getProduct(id: number): Promise<Product> {
-  return adminFetchJson<Product>(`/admin/products/${id}`);
+  return adminFetchJson<Product>(`/admin/products/${id}`, {}, "Couldn't load this product.");
 }
 
 export function createProduct(body: {
@@ -67,37 +84,41 @@ export function createProduct(body: {
   description: string | null;
   variants: VariantInput[];
 }): Promise<Product> {
-  return adminFetchJson<Product>("/admin/products", {
-    method: "POST",
-    body: JSON.stringify(body),
-  });
+  return adminFetchJson<Product>(
+    "/admin/products",
+    { method: "POST", body: JSON.stringify(body) },
+    "Couldn't create the product.",
+  );
 }
 
 export function updateProduct(
   id: number,
   body: Partial<{ name: string; description: string | null; active: boolean }>,
 ): Promise<Product> {
-  return adminFetchJson<Product>(`/admin/products/${id}`, {
-    method: "PATCH",
-    body: JSON.stringify(body),
-  });
+  return adminFetchJson<Product>(
+    `/admin/products/${id}`,
+    { method: "PATCH", body: JSON.stringify(body) },
+    "Couldn't save product details.",
+  );
 }
 
 export async function uploadProductPhoto(id: number, file: File): Promise<Product> {
   const formData = new FormData();
   formData.append("photo", file);
-  const res = await adminFetch(`/admin/products/${id}/photo`, {
-    method: "POST",
-    body: formData,
-  });
+  const res = await adminFetch(
+    `/admin/products/${id}/photo`,
+    { method: "POST", body: formData },
+    "Couldn't upload the photo.",
+  );
   return (await res.json()) as Product;
 }
 
 export function createVariant(productId: number, body: VariantInput): Promise<Product> {
-  return adminFetchJson<Product>(`/admin/products/${productId}/variants`, {
-    method: "POST",
-    body: JSON.stringify(body),
-  });
+  return adminFetchJson<Product>(
+    `/admin/products/${productId}/variants`,
+    { method: "POST", body: JSON.stringify(body) },
+    "Couldn't add that variant.",
+  );
 }
 
 export function updateVariant(
@@ -105,8 +126,9 @@ export function updateVariant(
   variantId: number,
   body: Partial<VariantInput & { active: boolean }>,
 ): Promise<Product> {
-  return adminFetchJson<Product>(`/admin/products/${productId}/variants/${variantId}`, {
-    method: "PATCH",
-    body: JSON.stringify(body),
-  });
+  return adminFetchJson<Product>(
+    `/admin/products/${productId}/variants/${variantId}`,
+    { method: "PATCH", body: JSON.stringify(body) },
+    "Couldn't save that variant.",
+  );
 }

@@ -3,7 +3,7 @@
 import { useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { createProduct, type VariantInput } from "@/lib/catalog";
+import { CatalogError, createProduct, type VariantInput } from "@/lib/catalog";
 import styles from "../../../admin.module.css";
 
 type DraftVariant = VariantInput & { key: number };
@@ -53,8 +53,8 @@ export default function NewProductPage() {
         variants: variants.map(({ size, color, price, stock }) => ({ size, color, price, stock })),
       });
       router.push(`/admin/products/${product.id}`);
-    } catch {
-      setError("Couldn't create the product.");
+    } catch (err) {
+      setError(err instanceof CatalogError ? err.message : "Couldn't create the product.");
     } finally {
       setSubmitting(false);
     }

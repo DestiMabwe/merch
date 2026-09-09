@@ -30,6 +30,10 @@ export default function AdminLoginPage() {
   return (
     <div className={styles.screen}>
       <div className={styles.card}>
+        <div className={styles.cardMark}>
+          <img src="/church-logo.png" alt="" width={32} height={32} />
+          <span>Forward In Faith Ministries Int.</span>
+        </div>
         <h1 className={styles.title}>Admin Login</h1>
         <form onSubmit={handleSubmit}>
           <div className={styles.field}>

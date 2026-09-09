@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { listProducts, type Product } from "@/lib/catalog";
+import { CatalogError, listProducts, type Product } from "@/lib/catalog";
 import styles from "../../admin.module.css";
 
 export default function ProductsPage() {
@@ -12,7 +12,9 @@ export default function ProductsPage() {
   useEffect(() => {
     listProducts()
       .then(setProducts)
-      .catch(() => setError("Couldn't load products."));
+      .catch((err) =>
+        setError(err instanceof CatalogError ? err.message : "Couldn't load products."),
+      );
   }, []);
 
   return (
@@ -31,36 +33,40 @@ export default function ProductsPage() {
       {products && products.length === 0 && <p>No products yet.</p>}
 
       {products && products.length > 0 && (
-        <table className={styles.table}>
-          <thead>
-            <tr>
-              <th>Name</th>
-              <th>Status</th>
-              <th>Variants</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody>
-            {products.map((product) => (
-              <tr key={product.id}>
-                <td>{product.name}</td>
-                <td>
-                  <span
-                    className={`${styles.badge} ${
-                      product.active ? styles.badgeActive : styles.badgeInactive
-                    }`}
-                  >
-                    {product.active ? "Active" : "Inactive"}
-                  </span>
-                </td>
-                <td>{product.variants.length}</td>
-                <td>
-                  <Link href={`/admin/products/${product.id}`}>Edit</Link>
-                </td>
+        <div className={styles.tableScroll}>
+          <table className={styles.table}>
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Status</th>
+                <th>Variants</th>
+                <th></th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {products.map((product) => (
+                <tr key={product.id}>
+                  <td>{product.name}</td>
+                  <td>
+                    <span
+                      className={`${styles.badge} ${
+                        product.active ? styles.badgeFilled : styles.badgeQuiet
+                      }`}
+                    >
+                      {product.active ? "Active" : "Inactive"}
+                    </span>
+                  </td>
+                  <td>{product.variants.length}</td>
+                  <td>
+                    <Link href={`/admin/products/${product.id}`} className={styles.secondaryButton}>
+                      Edit
+                    </Link>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
     </div>
   );
