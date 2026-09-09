@@ -8,13 +8,12 @@ mockup deck at the repo root.
 Usage: uv run python -m app.seed_catalog
 """
 
-import shutil
-import uuid
+import mimetypes
 from pathlib import Path
 
 from app.db import SessionLocal
 from app.models import Product, Variant
-from app.storage import PUBLIC_BASE_URL, UPLOAD_DIR
+from app.storage import get_storage
 
 SEED_ASSETS_DIR = Path(__file__).resolve().parent.parent / "seed_assets"
 
@@ -56,14 +55,24 @@ PRODUCTS = [
 ]
 
 
+class _LocalFileUpload:
+    """Minimal shim exposing the subset of FastAPI's UploadFile that
+    FileStorage.save() needs, so seeding can go through the same storage
+    abstraction (local disk or S3) as a real admin-uploaded photo."""
+
+    def __init__(self, path: Path) -> None:
+        self.filename = path.name
+        self.content_type = mimetypes.guess_type(path.name)[0] or "application/octet-stream"
+        self.file = path.open("rb")
+
+
 def _save_seed_photo(filename: str) -> str:
     source = SEED_ASSETS_DIR / filename
-    extension = source.suffix
-    target_name = f"{uuid.uuid4().hex}{extension}"
-    target_dir = UPLOAD_DIR / "products"
-    target_dir.mkdir(parents=True, exist_ok=True)
-    shutil.copyfile(source, target_dir / target_name)
-    return f"{PUBLIC_BASE_URL.rstrip('/')}/uploads/products/{target_name}"
+    upload = _LocalFileUpload(source)
+    try:
+        return get_storage().save(upload, folder="products")
+    finally:
+        upload.file.close()
 
 
 def seed() -> None:
