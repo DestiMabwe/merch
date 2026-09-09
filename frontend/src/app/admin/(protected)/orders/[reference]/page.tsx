@@ -103,7 +103,14 @@ export default function AdminOrderDetailPage({
   }
 
   if (error) {
-    return <p className={styles.error}>{error}</p>;
+    return (
+      <div>
+        <Link href="/admin/orders" className={styles.backLink}>
+          ← Orders
+        </Link>
+        <p className={styles.error}>{error}</p>
+      </div>
+    );
   }
 
   if (!order) {

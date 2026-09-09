@@ -129,7 +129,14 @@ export default function ProductEditPage({ params }: { params: Promise<{ id: stri
   }
 
   if (loadError) {
-    return <p className={styles.error}>{loadError}</p>;
+    return (
+      <div>
+        <Link href="/admin/products" className={styles.backLink}>
+          ← Products
+        </Link>
+        <p className={styles.error}>{loadError}</p>
+      </div>
+    );
   }
 
   if (!product) {
