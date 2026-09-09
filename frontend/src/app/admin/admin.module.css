@@ -14,6 +14,23 @@
   background: rgba(253, 246, 227, 0.03);
 }
 
+.cardMark {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid rgba(253, 246, 227, 0.15);
+  font-size: 0.75rem;
+  color: var(--ink-dim);
+}
+
+.cardMark img {
+  flex-shrink: 0;
+  width: 2rem;
+  height: 2rem;
+}
+
 .title {
   font-family: var(--font-billing-display), sans-serif;
   font-weight: 400;
@@ -73,12 +90,59 @@
   cursor: default;
 }
 
+.checkingLabel {
+  color: var(--ink-dim);
+  font-size: 0.85rem;
+}
+
+.editLockedNote {
+  color: var(--ink-dim);
+  font-size: 0.85rem;
+  margin-bottom: 1rem;
+}
+
+/* Armed-to-confirm state — bold fill, not the accent color, which stays
+   reserved for money and the primary action per DESIGN.md's One-Accent Rule. */
+.secondaryButtonArmed {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--ground);
+  font-weight: 700;
+}
+
+.secondaryButtonArmed:hover:not(:disabled) {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--ground);
+}
+
 .header {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
+  gap: 0.75rem 1.5rem;
   padding: 1.25rem 1.75rem;
   border-bottom: 1px solid rgba(253, 246, 227, 0.15);
+}
+
+.headerLeft {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 1.75rem;
+}
+
+.headerBrand {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.headerBrand img {
+  flex-shrink: 0;
+  width: 1.5rem;
+  height: 1.5rem;
 }
 
 .headerTitle {
@@ -86,6 +150,31 @@
   font-weight: 400;
   text-transform: uppercase;
   font-size: 1.1rem;
+  white-space: nowrap;
+}
+
+.headerNav {
+  display: flex;
+  gap: 1.25rem;
+}
+
+.headerNavLink {
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+  padding-bottom: 0.2rem;
+  border-bottom: 2px solid transparent;
+}
+
+.headerNavLink:hover {
+  color: var(--ink);
+}
+
+.headerNavLink[data-active] {
+  color: var(--ink);
+  border-bottom-color: var(--ink);
 }
 
 .headerRight {
@@ -153,6 +242,7 @@
 }
 
 .secondaryButton {
+  display: inline-block;
   background: none;
   border: 1px solid var(--ink-dim);
   color: var(--ink-dim);
@@ -174,10 +264,26 @@
   cursor: default;
 }
 
+.tableScroll {
+  overflow-x: auto;
+  scrollbar-color: var(--ink-dim) transparent;
+}
+
 .table {
   width: 100%;
   border-collapse: collapse;
   font-size: 0.88rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.tableWide {
+  min-width: 34rem;
+}
+
+.dashboardCount {
+  text-align: right;
+  font-weight: 700;
+  width: 4rem;
 }
 
 .table th,
@@ -185,6 +291,19 @@
   text-align: left;
   padding: 0.6rem 0.75rem;
   border-bottom: 1px solid rgba(253, 246, 227, 0.12);
+}
+
+.rowLink {
+  font-weight: 700;
+  color: var(--ink);
+  text-decoration: underline;
+  text-decoration-color: transparent;
+  text-underline-offset: 0.2em;
+  transition: text-decoration-color 120ms ease;
+}
+
+.rowLink:hover {
+  text-decoration-color: var(--ink);
 }
 
 .table th {
@@ -195,21 +314,58 @@
   letter-spacing: 0.03em;
 }
 
+.table th.variantGroupHeading {
+  padding-top: 1.1rem;
+  text-align: left;
+  color: var(--ink);
+  font-weight: 700;
+  font-size: 0.78rem;
+  text-transform: none;
+  letter-spacing: 0.01em;
+  border-bottom-color: var(--ink-dim);
+}
+
+/*
+ * Status badges never take the magenta accent — per DESIGN.md's One-Accent
+ * Rule, magenta marks only money and the primary action. Distinction here
+ * comes from fill/weight/opacity, the same vocabulary the storefront's
+ * selected-size chip uses (filled cream = current/actionable state).
+ */
 .badge {
   display: inline-block;
   font-size: 0.7rem;
+  font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.03em;
-  padding: 0.2rem 0.5rem;
+  padding: 0.2rem 0.55rem;
   border: 1px solid currentColor;
 }
 
-.badgeActive {
-  color: var(--accent);
+.badgeFilled {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--ground);
 }
 
-.badgeInactive {
+.badgeOutlined {
+  color: var(--ink);
+}
+
+.badgeNeutral {
   color: var(--ink-dim);
+  font-weight: 500;
+}
+
+.badgeQuiet {
+  color: var(--ink-dim);
+  font-weight: 500;
+  opacity: 0.65;
+}
+
+.badgeDead {
+  color: var(--ink-dim);
+  font-weight: 500;
+  text-decoration: line-through;
 }
 
 .section {
@@ -227,9 +383,47 @@
 .checkboxField {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.6rem;
   margin-bottom: 1rem;
   font-size: 0.85rem;
+}
+
+.checkbox {
+  appearance: none;
+  flex-shrink: 0;
+  width: 1.1rem;
+  height: 1.1rem;
+  margin: 0;
+  border: 1px solid var(--ink-dim);
+  background: transparent;
+  cursor: pointer;
+  position: relative;
+}
+
+.checkbox:hover {
+  border-color: var(--ink);
+}
+
+.checkbox:checked {
+  background: var(--ink);
+  border-color: var(--ink);
+}
+
+.checkbox:checked::after {
+  content: "";
+  position: absolute;
+  left: 3px;
+  top: -1px;
+  width: 4px;
+  height: 8px;
+  border: solid var(--ground);
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+.checkbox:focus-visible {
+  outline: 3px solid var(--focus-ring);
+  outline-offset: 2px;
 }
 
 .photoPreview {
@@ -238,6 +432,13 @@
   height: auto;
   border: 1px solid rgba(253, 246, 227, 0.15);
   margin-bottom: 1rem;
+}
+
+.orderTotal {
+  margin-top: 1rem;
+  font-size: 1.1rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
 }
 
 .variantRow {
