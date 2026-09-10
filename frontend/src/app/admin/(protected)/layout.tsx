@@ -15,6 +15,7 @@ const NAV_LINKS = [
   { href: "/admin", label: "Dashboard" },
   { href: "/admin/products", label: "Products" },
   { href: "/admin/orders", label: "Orders" },
+  { href: "/admin/production", label: "Production" },
 ];
 
 export default function ProtectedAdminLayout({ children }: LayoutProps<"/admin">) {

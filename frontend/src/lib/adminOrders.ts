@@ -34,6 +34,14 @@ export type AdminOrderLineItem = {
   variant_color: string | null;
   unit_price: number;
   quantity: number;
+  recipient_name: string | null;
+};
+
+export type ProductionLineItem = AdminOrderLineItem & {
+  order_reference: string;
+  customer_name: string;
+  order_status: string;
+  created_at: string;
 };
 
 export type AdminOrderSummary = {
@@ -89,6 +97,19 @@ export function getAdminOrder(reference: string): Promise<AdminOrderDetail> {
   return adminFetchJson<AdminOrderDetail>(`/admin/orders/${encodeURIComponent(reference)}`);
 }
 
+export function listOrderItems(filters: {
+  productId?: number;
+  status?: string;
+  sort?: "oldest" | "newest";
+}): Promise<ProductionLineItem[]> {
+  const params = new URLSearchParams();
+  if (filters.productId) params.set("product_id", String(filters.productId));
+  if (filters.status) params.set("status_filter", filters.status);
+  if (filters.sort) params.set("sort", filters.sort);
+  const query = params.toString();
+  return adminFetchJson<ProductionLineItem[]>(`/admin/orders/items${query ? `?${query}` : ""}`);
+}
+
 function postTransition(reference: string, action: string): Promise<AdminOrderDetail> {
   return adminFetchJson<AdminOrderDetail>(
     `/admin/orders/${encodeURIComponent(reference)}/${action}`,
@@ -127,7 +148,7 @@ export function uploadAdminProofOfPayment(
 export function updateLineItem(
   reference: string,
   itemId: number,
-  body: { variant_id?: number; quantity?: number },
+  body: { variant_id?: number; quantity?: number; recipient_name?: string },
 ): Promise<AdminOrderDetail> {
   return adminFetchJson<AdminOrderDetail>(
     `/admin/orders/${encodeURIComponent(reference)}/items/${itemId}`,

@@ -23,8 +23,16 @@ class OrderLineItemOut(BaseModel):
     variant_color: str | None
     unit_price: int
     quantity: int
+    recipient_name: str | None
 
     model_config = {"from_attributes": True}
+
+
+class OrderLineItemWithOrderOut(OrderLineItemOut):
+    order_reference: str
+    customer_name: str
+    order_status: str
+    created_at: datetime
 
 
 class OrderSummaryOut(BaseModel):
@@ -51,11 +59,12 @@ class OrderDetailOut(BaseModel):
 class LineItemUpdate(BaseModel):
     variant_id: int | None = None
     quantity: int | None = Field(default=None, gt=0)
+    recipient_name: str | None = None
 
     @model_validator(mode="after")
     def _at_least_one_field(self) -> "LineItemUpdate":
-        if self.variant_id is None and self.quantity is None:
-            raise ValueError("Provide a variant_id and/or quantity to update")
+        if self.variant_id is None and self.quantity is None and self.recipient_name is None:
+            raise ValueError("Provide a variant_id, quantity, and/or recipient_name to update")
         return self
 
 
@@ -143,6 +152,46 @@ def list_orders(
     return [_to_summary(order) for order in query.all()]
 
 
+@router.get("/items", response_model=list[OrderLineItemWithOrderOut])
+def list_order_items(
+    product_id: int | None = None,
+    status_filter: str | None = None,
+    sort: Literal["oldest", "newest"] = "oldest",
+    db: Session = Depends(get_db),
+) -> list[OrderLineItemWithOrderOut]:
+    """Flat, filterable list of line items across orders — the supplier's print
+    list. Filter by product to see just tees vs. hoodies vs. crewnecks, then
+    group by variant client-side to get a print-run count. Cancelled orders
+    are excluded unless a status is explicitly requested."""
+    query = db.query(OrderLineItem).join(Order).options(selectinload(OrderLineItem.order))
+    if product_id is not None:
+        query = query.filter(OrderLineItem.product_id == product_id)
+    if status_filter:
+        query = query.filter(Order.status == status_filter)
+    else:
+        query = query.filter(Order.status != "cancelled")
+    query = query.order_by(Order.created_at.asc() if sort == "oldest" else Order.created_at.desc())
+
+    return [
+        OrderLineItemWithOrderOut(
+            id=item.id,
+            product_id=item.product_id,
+            variant_id=item.variant_id,
+            product_name=item.product_name,
+            variant_size=item.variant_size,
+            variant_color=item.variant_color,
+            unit_price=item.unit_price,
+            quantity=item.quantity,
+            recipient_name=item.recipient_name,
+            order_reference=item.order.reference,
+            customer_name=item.order.customer_name,
+            order_status=item.order.status,
+            created_at=item.order.created_at,
+        )
+        for item in query.all()
+    ]
+
+
 @router.get("/{reference}", response_model=OrderDetailOut)
 def get_order(reference: str, db: Session = Depends(get_db)) -> OrderDetailOut:
     return _to_detail(_get_order_or_404(db, reference))
@@ -221,6 +270,9 @@ def update_line_item(
 
     if body.quantity is not None:
         item.quantity = body.quantity
+
+    if body.recipient_name is not None:
+        item.recipient_name = body.recipient_name.strip() or None
 
     db.commit()
     db.refresh(order)

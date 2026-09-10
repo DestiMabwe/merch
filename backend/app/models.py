@@ -87,5 +87,9 @@ class OrderLineItem(Base):
     variant_color: Mapped[str | None] = mapped_column(String(50), nullable=True)
     unit_price: Mapped[int] = mapped_column()
     quantity: Mapped[int] = mapped_column()
+    # Whose garment this line is, for orders covering multiple people (e.g. a
+    # parent ordering for the family) — lets the supplier tell items apart
+    # when printing/packing a batch of the same product.
+    recipient_name: Mapped[str | None] = mapped_column(String(255), nullable=True)
 
     order: Mapped["Order"] = relationship(back_populates="items")

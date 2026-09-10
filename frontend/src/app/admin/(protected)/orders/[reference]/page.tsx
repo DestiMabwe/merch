@@ -196,6 +196,7 @@ export default function AdminOrderDetailPage({
               <tr>
                 <th>Product</th>
                 <th>Variant</th>
+                <th>Recipient</th>
                 <th>Qty</th>
                 <th>Unit Price</th>
                 <th>Line Total</th>
@@ -276,6 +277,7 @@ function LineItemRow({
   const [siblingVariants, setSiblingVariants] = useState<Variant[] | null>(null);
   const [variantId, setVariantId] = useState(item.variant_id);
   const [quantity, setQuantity] = useState(item.quantity);
+  const [recipientName, setRecipientName] = useState(item.recipient_name ?? "");
   const [saving, setSaving] = useState(false);
   const [rowError, setRowError] = useState<string | null>(null);
 
@@ -290,9 +292,10 @@ function LineItemRow({
     setRowError(null);
     setSaving(true);
     try {
-      const body: { variant_id?: number; quantity?: number } = {};
+      const body: { variant_id?: number; quantity?: number; recipient_name?: string } = {};
       if (variantId !== item.variant_id) body.variant_id = variantId;
       if (quantity !== item.quantity) body.quantity = quantity;
+      if (recipientName.trim() !== (item.recipient_name ?? "")) body.recipient_name = recipientName.trim();
       onChange(await updateLineItem(reference, item.id, body));
     } catch (err) {
       setRowError(err instanceof AdminOrdersError ? err.message : "Couldn't save this item.");
@@ -313,7 +316,10 @@ function LineItemRow({
     }
   }
 
-  const dirty = variantId !== item.variant_id || quantity !== item.quantity;
+  const dirty =
+    variantId !== item.variant_id ||
+    quantity !== item.quantity ||
+    recipientName.trim() !== (item.recipient_name ?? "");
   const variantText =
     [item.variant_size, item.variant_color].filter(Boolean).join(" / ") || "One size";
 
@@ -322,6 +328,7 @@ function LineItemRow({
       <tr>
         <td>{item.product_name}</td>
         <td>{variantText}</td>
+        <td>{item.recipient_name || "—"}</td>
         <td>{item.quantity}</td>
         <td>R{item.unit_price}</td>
         <td>R{item.unit_price * item.quantity}</td>
@@ -352,6 +359,15 @@ function LineItemRow({
         ) : (
           variantText
         )}
+      </td>
+      <td>
+        <input
+          className={styles.variantInput}
+          type="text"
+          placeholder="Whose?"
+          value={recipientName}
+          onChange={(event) => setRecipientName(event.target.value)}
+        />
       </td>
       <td>
         <input
