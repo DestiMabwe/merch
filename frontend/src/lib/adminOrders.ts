@@ -41,6 +41,7 @@ export type ProductionLineItem = AdminOrderLineItem & {
   order_reference: string;
   customer_name: string;
   order_status: string;
+  order_proof_of_payment_url: string | null;
   created_at: string;
 };
 

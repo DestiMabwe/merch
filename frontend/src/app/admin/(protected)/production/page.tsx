@@ -5,8 +5,12 @@ import Link from "next/link";
 import {
   AdminOrdersError,
   listOrderItems,
+  markOrderCollected,
+  markOrderPaid,
+  markOrderReadyForCollection,
   statusBadgeVariant,
   updateLineItem,
+  type AdminOrderDetail,
   type ProductionLineItem,
 } from "@/lib/adminOrders";
 import { listProducts, type Product } from "@/lib/catalog";
@@ -26,6 +30,15 @@ const STATUS_OPTIONS = [
 // edited (including naming a recipient) while an order is in one of these.
 const ACTIVE_STATUSES = new Set(["pending_payment", "paid", "ready_for_collection"]);
 
+// The next lifecycle step for each status — same progression the order
+// detail page walks through, surfaced here so the supplier can advance an
+// order without leaving the print list.
+const STATUS_ACTIONS: Record<string, { label: string; action: (ref: string) => Promise<AdminOrderDetail> }> = {
+  pending_payment: { label: "Mark payment received", action: markOrderPaid },
+  paid: { label: "Mark ready for collection", action: markOrderReadyForCollection },
+  ready_for_collection: { label: "Mark collected", action: markOrderCollected },
+};
+
 function variantText(item: Pick<ProductionLineItem, "variant_size" | "variant_color">): string {
   return [item.variant_size, item.variant_color].filter(Boolean).join(" / ") || "One size";
 }
@@ -37,6 +50,9 @@ export default function AdminProductionPage() {
   const [sort, setSort] = useState<"oldest" | "newest">("oldest");
   const [items, setItems] = useState<ProductionLineItem[] | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  const [pendingOrders, setPendingOrders] = useState<Set<string>>(new Set());
+  const [statusErrors, setStatusErrors] = useState<Record<string, string>>({});
 
   useEffect(() => {
     listProducts()
@@ -72,10 +88,46 @@ export default function AdminProductionPage() {
 
   const totalPieces = aggregate.reduce((sum, row) => sum + row.qty, 0);
 
-  function handleItemUpdate(itemId: number, recipientName: string | null) {
+  function handleRecipientUpdate(itemId: number, recipientName: string | null) {
     setItems((current) =>
       current ? current.map((item) => (item.id === itemId ? { ...item, recipient_name: recipientName } : item)) : current,
     );
+  }
+
+  async function handleStatusAction(
+    orderReference: string,
+    action: (ref: string) => Promise<AdminOrderDetail>,
+  ) {
+    setStatusErrors((prev) => {
+      const next = { ...prev };
+      delete next[orderReference];
+      return next;
+    });
+    setPendingOrders((prev) => new Set(prev).add(orderReference));
+    try {
+      const updated = await action(orderReference);
+      // An order can have several matching rows (e.g. two tees in different
+      // sizes) — the status change applies to the whole order, so update
+      // every row that shares this reference.
+      setItems((current) =>
+        current
+          ? current.map((item) =>
+              item.order_reference === orderReference ? { ...item, order_status: updated.status } : item,
+            )
+          : current,
+      );
+    } catch (err) {
+      setStatusErrors((prev) => ({
+        ...prev,
+        [orderReference]: err instanceof AdminOrdersError ? err.message : "Couldn't update this order.",
+      }));
+    } finally {
+      setPendingOrders((prev) => {
+        const next = new Set(prev);
+        next.delete(orderReference);
+        return next;
+      });
+    }
   }
 
   return (
@@ -145,7 +197,7 @@ export default function AdminProductionPage() {
 
       {items && items.length > 0 && (
         <div className={styles.section}>
-          <h2 className={styles.sectionTitle}>Items</h2>
+          <h2 className={styles.sectionTitle}>Orders</h2>
           <div className={styles.tableScroll}>
             <table className={`${styles.table} ${styles.tableWide}`}>
               <thead>
@@ -157,11 +209,19 @@ export default function AdminProductionPage() {
                   <th>Qty</th>
                   <th>Recipient</th>
                   <th>Status</th>
+                  <th></th>
                 </tr>
               </thead>
               <tbody>
                 {items.map((item) => (
-                  <ProductionItemRow key={item.id} item={item} onUpdate={handleItemUpdate} />
+                  <ProductionItemRow
+                    key={item.id}
+                    item={item}
+                    pending={pendingOrders.has(item.order_reference)}
+                    statusError={statusErrors[item.order_reference]}
+                    onRecipientUpdate={handleRecipientUpdate}
+                    onStatusAction={handleStatusAction}
+                  />
                 ))}
               </tbody>
             </table>
@@ -174,10 +234,16 @@ export default function AdminProductionPage() {
 
 function ProductionItemRow({
   item,
-  onUpdate,
+  pending,
+  statusError,
+  onRecipientUpdate,
+  onStatusAction,
 }: {
   item: ProductionLineItem;
-  onUpdate: (itemId: number, recipientName: string | null) => void;
+  pending: boolean;
+  statusError: string | undefined;
+  onRecipientUpdate: (itemId: number, recipientName: string | null) => void;
+  onStatusAction: (orderReference: string, action: (ref: string) => Promise<AdminOrderDetail>) => void;
 }) {
   const [recipientName, setRecipientName] = useState(item.recipient_name ?? "");
   const [saving, setSaving] = useState(false);
@@ -186,18 +252,21 @@ function ProductionItemRow({
   const editable = ACTIVE_STATUSES.has(item.order_status);
   const dirty = recipientName.trim() !== (item.recipient_name ?? "");
 
-  async function handleSave() {
+  async function handleSaveRecipient() {
     setRowError(null);
     setSaving(true);
     try {
       await updateLineItem(item.order_reference, item.id, { recipient_name: recipientName.trim() });
-      onUpdate(item.id, recipientName.trim() || null);
+      onRecipientUpdate(item.id, recipientName.trim() || null);
     } catch (err) {
       setRowError(err instanceof AdminOrdersError ? err.message : "Couldn't save this name.");
     } finally {
       setSaving(false);
     }
   }
+
+  const nextAction = STATUS_ACTIONS[item.order_status];
+  const missingProof = item.order_status === "pending_payment" && !item.order_proof_of_payment_url;
 
   return (
     <tr>
@@ -223,7 +292,7 @@ function ProductionItemRow({
             <button
               type="button"
               className={styles.secondaryButton}
-              onClick={handleSave}
+              onClick={handleSaveRecipient}
               disabled={saving || !dirty}
             >
               {saving ? "Saving…" : "Save"}
@@ -242,6 +311,24 @@ function ProductionItemRow({
         <span className={`${styles.badge} ${styles[`badge${statusBadgeVariant(item.order_status)}`]}`}>
           {statusLabel(item.order_status)}
         </span>
+      </td>
+      <td>
+        {nextAction && (
+          <button
+            type="button"
+            className={styles.secondaryButton}
+            onClick={() => onStatusAction(item.order_reference, nextAction.action)}
+            disabled={pending || missingProof}
+            title={missingProof ? "Attach proof of payment on this order before marking it paid" : undefined}
+          >
+            {pending ? "Updating…" : nextAction.label}
+          </button>
+        )}
+        {statusError && (
+          <p className={styles.error} role="alert">
+            {statusError}
+          </p>
+        )}
       </td>
     </tr>
   );

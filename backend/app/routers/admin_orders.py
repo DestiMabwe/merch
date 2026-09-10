@@ -32,6 +32,7 @@ class OrderLineItemWithOrderOut(OrderLineItemOut):
     order_reference: str
     customer_name: str
     order_status: str
+    order_proof_of_payment_url: str | None
     created_at: datetime
 
 
@@ -186,6 +187,7 @@ def list_order_items(
             order_reference=item.order.reference,
             customer_name=item.order.customer_name,
             order_status=item.order.status,
+            order_proof_of_payment_url=item.order.proof_of_payment_url,
             created_at=item.order.created_at,
         )
         for item in query.all()
