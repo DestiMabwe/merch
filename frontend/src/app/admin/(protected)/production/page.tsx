@@ -10,6 +10,7 @@ import {
   markOrderReadyForCollection,
   statusBadgeVariant,
   updateLineItem,
+  uploadAdminProofOfPayment,
   type AdminOrderDetail,
   type ProductionLineItem,
 } from "@/lib/adminOrders";
@@ -91,6 +92,18 @@ export default function AdminProductionPage() {
   function handleRecipientUpdate(itemId: number, recipientName: string | null) {
     setItems((current) =>
       current ? current.map((item) => (item.id === itemId ? { ...item, recipient_name: recipientName } : item)) : current,
+    );
+  }
+
+  function handleProofUploaded(orderReference: string, proofUrl: string | null) {
+    // Same order-level fan-out as a status change — a proof file belongs to
+    // the order, not one line item, so every matching row picks it up.
+    setItems((current) =>
+      current
+        ? current.map((item) =>
+            item.order_reference === orderReference ? { ...item, order_proof_of_payment_url: proofUrl } : item,
+          )
+        : current,
     );
   }
 
@@ -208,6 +221,7 @@ export default function AdminProductionPage() {
                   <th>Variant</th>
                   <th>Qty</th>
                   <th>Recipient</th>
+                  <th>Proof</th>
                   <th>Status</th>
                   <th></th>
                 </tr>
@@ -221,6 +235,7 @@ export default function AdminProductionPage() {
                     statusError={statusErrors[item.order_reference]}
                     onRecipientUpdate={handleRecipientUpdate}
                     onStatusAction={handleStatusAction}
+                    onProofUploaded={handleProofUploaded}
                   />
                 ))}
               </tbody>
@@ -238,12 +253,14 @@ function ProductionItemRow({
   statusError,
   onRecipientUpdate,
   onStatusAction,
+  onProofUploaded,
 }: {
   item: ProductionLineItem;
   pending: boolean;
   statusError: string | undefined;
   onRecipientUpdate: (itemId: number, recipientName: string | null) => void;
   onStatusAction: (orderReference: string, action: (ref: string) => Promise<AdminOrderDetail>) => void;
+  onProofUploaded: (orderReference: string, proofUrl: string | null) => void;
 }) {
   const [recipientName, setRecipientName] = useState(item.recipient_name ?? "");
   const [saving, setSaving] = useState(false);
@@ -308,6 +325,9 @@ function ProductionItemRow({
         )}
       </td>
       <td>
+        <ProofCell item={item} onProofUploaded={onProofUploaded} />
+      </td>
+      <td>
         <span className={`${styles.badge} ${styles[`badge${statusBadgeVariant(item.order_status)}`]}`}>
           {statusLabel(item.order_status)}
         </span>
@@ -319,7 +339,7 @@ function ProductionItemRow({
             className={styles.secondaryButton}
             onClick={() => onStatusAction(item.order_reference, nextAction.action)}
             disabled={pending || missingProof}
-            title={missingProof ? "Attach proof of payment on this order before marking it paid" : undefined}
+            title={missingProof ? "Upload proof of payment (Proof column) before marking it paid" : undefined}
           >
             {pending ? "Updating…" : nextAction.label}
           </button>
@@ -331,5 +351,75 @@ function ProductionItemRow({
         )}
       </td>
     </tr>
+  );
+}
+
+// Payment isn't always confirmed through the self-service upload — a
+// customer might just inbox a screenshot to a secretary. This lets staff
+// attach whatever proof they were sent (or note payment some other way via
+// a file) without leaving the print list, so "mark paid" doesn't get stuck.
+function ProofCell({
+  item,
+  onProofUploaded,
+}: {
+  item: ProductionLineItem;
+  onProofUploaded: (orderReference: string, proofUrl: string | null) => void;
+}) {
+  const [file, setFile] = useState<File | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+
+  if (item.order_proof_of_payment_url) {
+    return (
+      <a
+        href={item.order_proof_of_payment_url}
+        target="_blank"
+        rel="noreferrer"
+        className={`${styles.badge} ${styles.badgeFilled}`}
+      >
+        Attached
+      </a>
+    );
+  }
+
+  async function handleUpload() {
+    if (!file) return;
+    setUploadError(null);
+    setUploading(true);
+    try {
+      const updated = await uploadAdminProofOfPayment(item.order_reference, file);
+      onProofUploaded(item.order_reference, updated.proof_of_payment_url);
+      setFile(null);
+    } catch (err) {
+      setUploadError(err instanceof AdminOrdersError ? err.message : "Couldn't upload that file.");
+    } finally {
+      setUploading(false);
+    }
+  }
+
+  return (
+    <div>
+      <span className={`${styles.badge} ${styles.badgeOutlined}`}>Missing</span>
+      <div className={styles.variantRow}>
+        <input
+          type="file"
+          accept="image/*,application/pdf"
+          onChange={(event) => setFile(event.target.files?.[0] ?? null)}
+        />
+        <button
+          type="button"
+          className={styles.secondaryButton}
+          onClick={handleUpload}
+          disabled={!file || uploading}
+        >
+          {uploading ? "Uploading…" : "Upload"}
+        </button>
+      </div>
+      {uploadError && (
+        <p className={styles.error} role="alert">
+          {uploadError}
+        </p>
+      )}
+    </div>
   );
 }
