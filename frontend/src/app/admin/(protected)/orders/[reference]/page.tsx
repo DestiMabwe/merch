@@ -362,7 +362,7 @@ function LineItemRow({
       </td>
       <td>
         <input
-          className={styles.variantInput}
+          className={styles.recipientInput}
           type="text"
           placeholder="Whose?"
           value={recipientName}

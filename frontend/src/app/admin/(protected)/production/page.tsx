@@ -44,6 +44,15 @@ function variantText(item: Pick<ProductionLineItem, "variant_size" | "variant_co
   return [item.variant_size, item.variant_color].filter(Boolean).join(" / ") || "One size";
 }
 
+// This sale is a single campaign, one design across three garments (per
+// PRODUCT.md) — every product name repeats the same "Purpose Over Pressure"
+// prefix, which just wraps and eats row height in a dense per-item list.
+// Drop it here; the full name still appears in the Print Run summary above.
+const CAMPAIGN_PREFIX = "Purpose Over Pressure ";
+function shortProductName(name: string): string {
+  return name.startsWith(CAMPAIGN_PREFIX) ? name.slice(CAMPAIGN_PREFIX.length) : name;
+}
+
 export default function AdminProductionPage() {
   const [products, setProducts] = useState<Product[] | null>(null);
   const [productId, setProductId] = useState<string>("");
@@ -217,13 +226,12 @@ export default function AdminProductionPage() {
                 <tr>
                   <th>Order</th>
                   <th>Customer</th>
-                  <th>Product</th>
-                  <th>Variant</th>
+                  <th>Item</th>
                   <th>Qty</th>
                   <th>Recipient</th>
                   <th>Proof</th>
                   <th>Status</th>
-                  <th></th>
+                  <th>Action</th>
                 </tr>
               </thead>
               <tbody>
@@ -293,14 +301,15 @@ function ProductionItemRow({
         </Link>
       </td>
       <td>{item.customer_name}</td>
-      <td>{item.product_name}</td>
-      <td>{variantText(item)}</td>
-      <td>{item.quantity}</td>
+      <td>
+        {shortProductName(item.product_name)} — {variantText(item)}
+      </td>
+      <td className={styles.dashboardCount}>{item.quantity}</td>
       <td>
         {editable ? (
           <div className={styles.variantRow}>
             <input
-              className={styles.variantInput}
+              className={styles.recipientInput}
               type="text"
               placeholder="Whose?"
               value={recipientName}
@@ -333,7 +342,7 @@ function ProductionItemRow({
         </span>
       </td>
       <td>
-        {nextAction && (
+        {nextAction ? (
           <button
             type="button"
             className={styles.secondaryButton}
@@ -343,6 +352,8 @@ function ProductionItemRow({
           >
             {pending ? "Updating…" : nextAction.label}
           </button>
+        ) : (
+          "—"
         )}
         {statusError && (
           <p className={styles.error} role="alert">
@@ -401,11 +412,15 @@ function ProofCell({
     <div>
       <span className={`${styles.badge} ${styles.badgeOutlined}`}>Missing</span>
       <div className={styles.variantRow}>
-        <input
-          type="file"
-          accept="image/*,application/pdf"
-          onChange={(event) => setFile(event.target.files?.[0] ?? null)}
-        />
+        <label className={`${styles.secondaryButton} ${styles.fileInputLabel} ${styles.fileInputWrap}`}>
+          <input
+            className={styles.fileInputHidden}
+            type="file"
+            accept="image/*,application/pdf"
+            onChange={(event) => setFile(event.target.files?.[0] ?? null)}
+          />
+          {file ? file.name : "Choose file"}
+        </label>
         <button
           type="button"
           className={styles.secondaryButton}
