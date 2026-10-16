@@ -117,6 +117,11 @@ def _get_line_item_or_404(order: Order, item_id: int) -> OrderLineItem:
     raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Line item not found")
 
 
+def _variant_label(variant: Variant) -> str:
+    parts = [part for part in (variant.size, variant.color) if part]
+    return " / ".join(parts) if parts else "this item"
+
+
 # Same set of "still in play" statuses that cancellation allows — once an order
 # is collected or cancelled there's nothing left to correct.
 _EDITABLE_STATUSES = {"pending_payment", "paid", "ready_for_collection"}
@@ -233,6 +238,11 @@ def upload_proof_of_payment(
     reference: str, file: UploadFile = File(...), db: Session = Depends(get_db)
 ) -> OrderDetailOut:
     order = _get_order_or_404(db, reference)
+    if order.status == "cancelled":
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="This order is cancelled and can no longer take a proof of payment",
+        )
 
     content_type = file.content_type or ""
     if not (content_type.startswith("image/") or content_type == "application/pdf"):
@@ -254,24 +264,43 @@ def update_line_item(
     _require_editable(order)
     item = _get_line_item_or_404(order, item_id)
 
-    if body.variant_id is not None:
+    # Re-validate against the *current* catalog state whenever a variant or
+    # quantity changes — a variant can be sold out or deactivated after the
+    # order was placed, and checkout's own stock/active checks don't run here.
+    if body.variant_id is not None or body.quantity is not None:
+        target_variant_id = body.variant_id if body.variant_id is not None else item.variant_id
+        target_quantity = body.quantity if body.quantity is not None else item.quantity
+
         variant = (
             db.query(Variant)
             .options(selectinload(Variant.product))
-            .filter(Variant.id == body.variant_id)
+            .filter(Variant.id == target_variant_id)
             .first()
         )
         if variant is None:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Variant not found")
-        item.product_id = variant.product_id
-        item.variant_id = variant.id
-        item.product_name = variant.product.name
-        item.variant_size = variant.size
-        item.variant_color = variant.color
-        item.unit_price = variant.price
+        if not variant.active or not variant.product.active:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="This variant is no longer available",
+            )
+        if target_quantity > variant.stock:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"{variant.product.name} ({_variant_label(variant)}) doesn't have "
+                f"{target_quantity} left in stock",
+            )
 
-    if body.quantity is not None:
-        item.quantity = body.quantity
+        if body.variant_id is not None:
+            item.product_id = variant.product_id
+            item.variant_id = variant.id
+            item.product_name = variant.product.name
+            item.variant_size = variant.size
+            item.variant_color = variant.color
+            item.unit_price = variant.price
+
+        if body.quantity is not None:
+            item.quantity = body.quantity
 
     if body.recipient_name is not None:
         item.recipient_name = body.recipient_name.strip() or None
