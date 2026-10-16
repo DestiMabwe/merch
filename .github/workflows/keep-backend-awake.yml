@@ -1,0 +1,22 @@
+name: Keep backend awake
+
+# Render's free plan spins the backend down after ~15 min of no traffic, and the
+# next request then has to cold-start it (tens of seconds) — which is what's been
+# showing up as "can't see orders". Pinging /health regularly keeps it warm.
+# This does NOT protect against Render's free Postgres database expiring/being
+# deleted — that needs a plan upgrade or a migration off Render, not a ping.
+# It does now *detect* it: the ping hits /health/ready, which checks the
+# database and answers 503 if it's unreachable, so this job goes red instead of
+# reporting success while every catalog and admin route returns 500.
+
+on:
+  schedule:
+    - cron: "*/10 * * * *"
+  workflow_dispatch: {}
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping backend readiness endpoint
+        run: curl -fsS --max-time 30 https://camp-merch-backend.onrender.com/health/ready

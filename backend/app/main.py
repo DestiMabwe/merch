@@ -1,9 +1,14 @@
 import os
 
-from fastapi import FastAPI
+from fastapi import Depends, FastAPI, status
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
+from sqlalchemy import text
+from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.orm import Session
 
+from app.db import get_db
 from app.routers import admin, admin_orders, catalog, orders, storefront
 from app.storage import UPLOAD_DIR
 
@@ -29,4 +34,24 @@ app.mount("/uploads", StaticFiles(directory=UPLOAD_DIR), name="uploads")
 
 @app.get("/health")
 def health() -> dict[str, str]:
+    """Liveness: is the process up? Deliberately touches nothing else."""
     return {"status": "ok"}
+
+
+@app.get("/health/ready")
+def readiness(db: Session = Depends(get_db)) -> JSONResponse:
+    """Readiness: can the API actually serve a request end to end?
+
+    `/health` stays green whenever uvicorn is running, which is why the store
+    could sit unusable for days while the keep-awake ping reported success —
+    every database-backed route was failing. This checks the database too, and
+    answers 503 when it can't be reached so a monitor can tell the difference.
+    """
+    try:
+        db.execute(text("SELECT 1"))
+    except SQLAlchemyError:
+        return JSONResponse(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            content={"status": "unavailable", "database": "unavailable"},
+        )
+    return JSONResponse(content={"status": "ok", "database": "ok"})
