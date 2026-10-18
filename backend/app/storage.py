@@ -1,7 +1,7 @@
 """File storage abstraction: "store a file, get back a retrievable URL."
 
-`LocalFileStorage` writes to local disk (dev only — most hosts, including
-Render's free/starter web services, have ephemeral disks, so anything
+`LocalFileStorage` writes to local disk (dev only — Vercel's filesystem is
+read-only and most other hosts have ephemeral disks, so anything
 written there is lost on redeploy or restart). `S3FileStorage` writes to
 an S3-compatible bucket (Cloudflare R2, AWS S3, etc.) and is used whenever
 `S3_BUCKET` is configured. `get_storage()` picks between them so callers

@@ -10,7 +10,7 @@ from sqlalchemy.orm import Session
 
 from app.db import get_db
 from app.routers import admin, admin_orders, catalog, orders, storefront
-from app.storage import UPLOAD_DIR
+from app.storage import S3_BUCKET, UPLOAD_DIR
 
 app = FastAPI(title="Camp Merch Store API")
 
@@ -28,8 +28,11 @@ app.include_router(catalog.router)
 app.include_router(orders.router)
 app.include_router(storefront.router)
 
-UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
-app.mount("/uploads", StaticFiles(directory=UPLOAD_DIR), name="uploads")
+# Local-disk uploads only exist when object storage isn't configured. Vercel's
+# filesystem is read-only, so creating the directory there would crash startup.
+if not S3_BUCKET:
+    UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
+    app.mount("/uploads", StaticFiles(directory=UPLOAD_DIR), name="uploads")
 
 
 @app.get("/health")
